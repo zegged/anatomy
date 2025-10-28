@@ -1,0 +1,133 @@
+Project Draft: Interactive 3D Cranial Nerve & Cutaneous Visualizer
+
+1. Project Objective
+
+To develop a high-fidelity, web-based 3D visualization tool using Three.js. The application will render an anatomically accurate model of the human upper body, allowing users to explore the pathways of specific cranial nerves (CN) and interactively mark cutaneous (skin) territories.
+
+This tool is intended for educational and clinical reference, aimed at medical students, neurologists, physical therapists, and other healthcare professionals.
+
+2. Target Audience
+
+Medical & Dental Students: For learning and reviewing complex neuroanatomy.
+
+Clinicians (Neurologists, ENTs, Surgeons): For patient education and surgical planning.
+
+Anatomy Enthusiasts: For self-guided learning.
+
+3. Core Features
+
+3.1. 3D Model & Navigation
+
+High-Fidelity Model: A detailed, anatomically accurate 3D model of the human upper body (head, neck, and torso), sourced from the Open 3D Model repository.
+
+Model Selection: Ability to toggle between male and female anatomical models (pending availability from source).
+
+Standard 3D Controls: Intuitive, mouse-driven controls for:
+
+Orbit: Rotate the model in 360 degrees.
+
+Pan: Move the model across the viewport.
+
+Zoom: Zoom in and out for detailed inspection.
+
+Reset View: A button to return the camera to the default starting position.
+
+3.2. Nerve Visualization System
+
+Targeted Nerves: The application will include accurate 3D models for the following cranial nerves and their primary branches:
+
+CN III (Oculomotor)
+
+CN V (Trigeminal - V1, V2, V3 branches)
+
+CN VI (Abducens)
+
+CN VII (Facial)
+
+CN XI (Accessory)
+
+CN XII (Hypoglossal)
+
+Interactive UI Panel: A persistent on-screen menu (e.g., a sidebar) will list all available nerves.
+
+Highlighting: Clicking a nerve's name in the UI will highlight its corresponding 3D model (e.g., by changing its color to bright yellow, adding an emissive "glow" effect, or isolating it).
+
+Multi-Select: Allow the user to select and view multiple nerves simultaneously.
+
+3.3. Nerve Isolation Mode
+
+"Isolation" Slider: A master slider (0% to 100%) that controls the visibility of the main body (skin, muscle, bone).
+
+Functionality: At 100%, the full body is visible. As the user moves the slider towards 0%, the body layers will fade out, leaving only the selected 3D nerve models visible in their anatomical positions. This allows for an unobstructed view of the nerve pathways.
+
+3.4. Cutaneous Marking ("Dermatome") Mode
+
+Tool-Toggle: A button to switch from "Navigation Mode" to "Marking Mode."
+
+Color Palette: A simple UI to select a color.
+
+Interactive Painting: In Marking Mode, the user's cursor becomes a "brush." Clicking or clicking-and-dragging on the model's skin will "paint" the selected color directly onto the skin texture.
+
+Use Case: This is perfect for mapping the sensory territories of the Trigeminal nerve (CN V) or areas of paresthesia.
+
+Erase Tool: An eraser tool to remove markings.
+
+Clear All: A button to clear all markings from the model.
+
+3.5. State Sharing via URL
+
+Generate Share Link: A "Share" button that generates a unique URL.
+
+State Encoding: This URL will encode the complete application state, including:
+
+The current camera position (orbit, pan, zoom).
+
+All active skin markings (coordinates and color).
+
+The list of currently highlighted nerves.
+
+The current "Isolation Mode" slider value.
+
+Restore State: When another user opens this unique URL, the application will load and automatically parse the URL parameters to restore that exact 3D view and all associated markings.
+
+4. Proposed Technical Stack
+
+3D Rendering: Three.js
+
+3D Model Format: glTF / GLB (The web standard. Models must be exported in this format).
+
+Model Loader: GLTFLoader (part of Three.js).
+
+Controls: OrbitControls (part of Three.js).
+
+Core Logic: JavaScript or TypeScript (recommended for a project of this complexity).
+
+UI Framework (Recommended): A lightweight library like React, Vue, or Svelte to manage the application's state (e.g., which nerve is selected, opacity levels, current color). This can also be done with plain HTML/CSS/JS.
+
+Interaction Logic: Raycasting (a Three.js feature) will be required to detect which part of the 3D model the user is clicking on for both nerve selection and skin marking.
+
+5. Project Foundation: Assets & Engine
+
+3D Models (The "Content"): The project will be built using assets from anatomytool.org. This provides the core anatomical structures (body, nerves, etc.).
+
+3D Engine (The "Interactivity"): Three.js is the rendering engine we will use to load, display, and interact with the 3D models. It provides the camera, lighting, controls, and the framework for implementing our custom features (isolation, marking, etc.).
+
+The "Framework": Our application's "framework" is the combination of the Anatomy Tool models + Three.js + our custom UI/logic.
+
+6. Potential Challenges & Next Steps
+
+Primary Challenge: Model Integration & Structure: The #1 priority is to download the models from anatomytool.org and inspect their structure. We need to verify:
+
+Are the target nerves (CN III, V, VI, VII, XI, XII) included and modeled as separate, selectable 3D objects?
+
+Is the body model layered (skin, muscle, bone as separate "meshes")? This is critical for the "Nerve Isolation Mode."
+
+If the models are not structured this way, a 3D artist may be needed to pre-process them in a tool like Blender.
+
+Performance: High-poly medical models can be very large. They must be optimized (e.g., using Draco compression) for fast web loading.
+
+Marking Logic: Implementing the "paint on skin" feature is complex. It involves raycasting to find the click location, getting the UV coordinates of the model's texture, and then dynamically drawing onto that texture in real-time.
+
+State Sharing Logic: Implementing the URL state encoding will require careful data serialization. All markings (which could be hundreds of points) and camera data must be compressed into a URL-safe string and parsed reliably.
+
+Anatomical Accuracy: We are trusting the accuracy of the source models.
