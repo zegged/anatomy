@@ -52,12 +52,24 @@ PY
       cp -r "$TMP_DIR/unzipped"/* "$ASSET_DIR/" 2>/dev/null || true
       cp -r "$TMP_DIR/unzipped"/.* "$ASSET_DIR/" 2>/dev/null || true
     fi
-    # Rename files to expected names (find the main OBJ, MTL, STL files and rename them)
+    # Rename files to expected names (find the main OBJ, MTL, STL, GLB files and rename them)
+    find "$ASSET_DIR" -name "*.glb" | head -n1 | xargs -I {} mv {} "$ASSET_DIR/model.glb" 2>/dev/null || true
+    find "$ASSET_DIR" -name "*.gltf" | head -n1 | xargs -I {} mv {} "$ASSET_DIR/model.gltf" 2>/dev/null || true
     find "$ASSET_DIR" -name "*.obj" | head -n1 | xargs -I {} mv {} "$ASSET_DIR/model.obj" 2>/dev/null || true
     find "$ASSET_DIR" -name "*.mtl" | head -n1 | xargs -I {} mv {} "$ASSET_DIR/model.mtl" 2>/dev/null || true
     find "$ASSET_DIR" -name "*.stl" | head -n1 | xargs -I {} mv {} "$ASSET_DIR/model.stl" 2>/dev/null || true
+
+    # Convert OBJ to GLB if OBJ exists but GLB doesn't (for better textures/performance)
+    if [ -f "$ASSET_DIR/model.obj" ] && [ ! -f "$ASSET_DIR/model.glb" ]; then
+      echo "Converting OBJ to GLB for better rendering..."
+      if command -v npx >/dev/null 2>&1; then
+        npx obj2gltf -i "$ASSET_DIR/model.obj" -o "$ASSET_DIR/model.glb" || echo "GLB conversion failed, keeping OBJ"
+      else
+        echo "npx not available, skipping GLB conversion"
+      fi
+    fi
     ;;
-  *.obj|*.stl|*.mtl)
+  *.obj|*.stl|*.mtl|*.glb|*.gltf)
     cp "$TMP_DIR/$FNAME" "$ASSET_DIR/model.${FNAME##*.}"
     ;;
   *) echo "Unsupported extension: $FNAME"; exit 2;;

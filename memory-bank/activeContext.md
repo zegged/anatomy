@@ -1,20 +1,22 @@
 # Active Context
 
 ## Current focus
-- POC verified: load AnatomyTool model in-browser with Three.js, orbit/pan/zoom working.
+- GLB support implemented: textured rendering pipeline ready for Phase 2 nerve visualization.
 
 ## Recent changes
-- `Dockerfile`: Node.js 20 + `http-server`; added `wget`/`unzip`.
-- `scripts/download_assets.sh`: accepts `MODEL_URL`, handles `.zip/.obj/.stl`, TLS fallback (POC-only), Python unzip fallback, auto-renames to `model.*`.
-- `public/index.html`: import map; OBJ/MTL/STL loaders; auto-detect available files; auto-frame camera.
-- Default model: AnatomyTool coloured skull (OBJ zip) → renders (untextured).
+- `public/index.html`: Added GLTFLoader import and GLB/GLTF preference in progressive loader (GLB→OBJ+MTL→OBJ→STL).
+- `scripts/download_assets.sh`: Extended to handle GLB/GLTF files and attempt OBJ→GLB conversion with obj2gltf.
+- Asset pipeline: Successfully downloads AnatomyTool skull; conversion attempted (needs tool fix).
+- Validation: GLB loading confirmed with DamagedHelmet.glb; skull renders via OBJ fallback.
+- Documentation: Created comprehensive Phase 2 nerve visualization design doc.
 
 ## Decisions
 - Keep CDN-based Three.js (no bundler yet).
-- Prioritize pipeline reliability before UI/features.
+- Prioritize textured GLB/GLTF support for better visuals.
+- Hybrid asset approach: prefer GLB for performance, fall back gracefully.
 
-## Next steps (proposed)
-1) Swap to GLB package for textures (use GLTFLoader) or fetch OBJ+MTL variant when available.
-2) Add simple UI toggle to load different models via `MODEL_URL` (optional scaffolding).
-3) Validate performance with larger/head-neck models; consider Draco/glTF-transform if needed.
-4) Prepare Phase 2 scope: initial nerve visualization strategy (assets audit + selection logic).
+## Next steps (Phase 2 preparation)
+1) Fix obj2gltf tool dependency issues for reliable OBJ→GLB conversion.
+2) Implement basic nerve model loading and visibility controls.
+3) Add simple UI for nerve selection and isolation modes.
+4) Source and integrate cranial nerve models from AnatomyTool or alternatives.

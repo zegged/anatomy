@@ -22,6 +22,7 @@
       import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
       import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
       import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
+      import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
       const canvas = document.querySelector('#c');
       const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
@@ -37,6 +38,8 @@
       const dir = new THREE.DirectionalLight(0xffffff, 1.0); dir.position.set(5,10,7.5); scene.add(dir);
 
       const MODEL_ROOT = './models/anatomytool/';
+      const GLB = MODEL_ROOT + 'model.glb';
+      const GLTF = MODEL_ROOT + 'model.gltf';
       const OBJ = MODEL_ROOT + 'model.obj';
       const MTL = MODEL_ROOT + 'model.mtl';
       const STL = MODEL_ROOT + 'model.stl';
@@ -44,6 +47,18 @@
       async function exists(url){ const r = await fetch(url,{method:'HEAD'}); return r.ok; }
 
       async function loadModel(scene) {
+        // Prefer GLB/GLTF for textures and performance
+        if (await exists(GLB)) {
+          const gltf = await new GLTFLoader().loadAsync(GLB);
+          scene.add(gltf.scene);
+          return gltf.scene;
+        }
+        if (await exists(GLTF)) {
+          const gltf = await new GLTFLoader().loadAsync(GLTF);
+          scene.add(gltf.scene);
+          return gltf.scene;
+        }
+        // Fall back to OBJ+MTL for textures
         if (await exists(MTL) && await exists(OBJ)) {
           const mtl = await new MTLLoader().loadAsync(MTL);
           mtl.preload();
@@ -53,11 +68,13 @@
           scene.add(obj);
           return obj;
         }
+        // Fall back to OBJ only
         if (await exists(OBJ)) {
           const obj = await new OBJLoader().loadAsync(OBJ);
           scene.add(obj);
           return obj;
         }
+        // Final fallback to STL
         if (await exists(STL)) {
           const geom = await new STLLoader().loadAsync(STL);
           const mat = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.1, roughness: 0.8 });
