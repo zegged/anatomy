@@ -1,0 +1,1 @@
+http-server public -p 8080 -c-1 --cors
