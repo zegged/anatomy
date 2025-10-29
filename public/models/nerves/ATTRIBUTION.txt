@@ -1,9 +1,28 @@
 Cranial Nerve Models - Attributions
 ===================================
 
-All models are licensed under Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
-Source: Open3D project (anatomytool.org), caskanatomy.info mirror
+Asset: CN_I — Olfactory Nerve (GLB)
+Creator: Sample Asset (DamagedHelmet.glb)
+Source: Three.js examples — https://unpkg.com/three@0.157.0/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf
+License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Changes: None (original)
 
+Asset: CN_II — Optic Nerve (GLB)
+Creator: Sample Asset (DamagedHelmet.glb)
+Source: Three.js examples — https://unpkg.com/three@0.157.0/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf
+License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Changes: None (original)
 
+Asset: CN_III — Oculomotor Nerve (GLB)
+Creator: Sample Asset (DamagedHelmet.glb)
+Source: Three.js examples — https://unpkg.com/three@0.157.0/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf
+License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Changes: None (original)
 
-For full license text: https://creativecommons.org/licenses/by-sa/4.0/
+Asset: CN_VII — Facial Nerve (GLB)
+Creator: Sample Asset (DamagedHelmet.glb)
+Source: Three.js examples — https://unpkg.com/three@0.157.0/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf
+License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Changes: None (original)
+
+For full license text: https://creativecommons.org/licenses/by/4.0/

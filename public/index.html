@@ -4,7 +4,39 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>POC – Three.js + GLB</title>
-    <style>html,body{margin:0;height:100%}canvas{display:block;width:100%;height:100%}</style>
+    <style>
+      html,body{margin:0;height:100%}
+      canvas{display:block;width:100%;height:100%}
+      #ui-panel {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(32, 33, 36, 0.9);
+        color: white;
+        padding: 15px;
+        border-radius: 8px;
+        max-width: 250px;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+      }
+      #ui-panel h3 { margin: 0 0 10px 0; font-size: 16px; }
+      #nerve-list { margin-bottom: 10px; }
+      .nerve-item { display: flex; align-items: center; margin-bottom: 5px; }
+      .nerve-item input { margin-right: 8px; }
+      .nerve-item label { cursor: pointer; }
+      #controls { display: flex; gap: 5px; }
+      #controls button {
+        flex: 1;
+        padding: 5px 8px;
+        background: #4285f4;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      #controls button:hover { background: #3367d6; }
+    </style>
     <script type="importmap">
     {
       "imports": {
@@ -15,6 +47,16 @@
     </script>
   </head>
   <body>
+    <div id="ui-panel">
+      <h3>Cranial Nerves</h3>
+      <div id="nerve-list"></div>
+      <div id="controls">
+        <button id="show-all">Show All</button>
+        <button id="hide-all">Hide All</button>
+        <button id="solo">Solo</button>
+        <button id="frame">Frame</button>
+      </div>
+    </div>
     <canvas id="c"></canvas>
     <script type="module">
       import * as THREE from 'three';
@@ -23,6 +65,11 @@
       import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
       import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
       import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+      import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+
+      // Configure Draco loader for compressed GLBs
+      const dracoLoader = new DRACOLoader();
+      dracoLoader.setDecoderPath('https://unpkg.com/three@0.157.0/examples/js/libs/draco/');
 
       const canvas = document.querySelector('#c');
       const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
@@ -49,12 +96,16 @@
       async function loadModel(scene) {
         // Prefer GLB/GLTF for textures and performance
         if (await exists(GLB)) {
-          const gltf = await new GLTFLoader().loadAsync(GLB);
+          const loader = new GLTFLoader();
+          loader.setDRACOLoader(dracoLoader);
+          const gltf = await loader.loadAsync(GLB);
           scene.add(gltf.scene);
           return gltf.scene;
         }
         if (await exists(GLTF)) {
-          const gltf = await new GLTFLoader().loadAsync(GLTF);
+          const loader = new GLTFLoader();
+          loader.setDRACOLoader(dracoLoader);
+          const gltf = await loader.loadAsync(GLTF);
           scene.add(gltf.scene);
           return gltf.scene;
         }
@@ -91,24 +142,87 @@
       const idToNerve = new Map();
       let lastToggledNerve = null;
 
+      // UI elements
+      const nerveList = document.getElementById('nerve-list');
+      const showAllBtn = document.getElementById('show-all');
+      const hideAllBtn = document.getElementById('hide-all');
+      const soloBtn = document.getElementById('solo');
+      const frameBtn = document.getElementById('frame');
+
+      // UI event handlers
+      showAllBtn.addEventListener('click', showAllNerves);
+      hideAllBtn.addEventListener('click', hideAllNerves);
+      soloBtn.addEventListener('click', () => soloNerve(lastToggledNerve));
+      frameBtn.addEventListener('click', () => frameNerve(lastToggledNerve));
+
       async function loadNerveModels(scene) {
         const manifestUrl = './models/nerves/manifest.json';
         const response = await fetch(manifestUrl);
         if (!response.ok) throw new Error('Manifest not found');
-        const nerveEntries = await response.json();
+        const manifest = await response.json();
+        const nerveEntries = manifest.nerves || [];
 
         const gltfLoader = new GLTFLoader();
+        gltfLoader.setDRACOLoader(dracoLoader);
         for (const n of nerveEntries) {
-          const gltf = await gltfLoader.loadAsync(n.localPath);
+          const gltf = await gltfLoader.loadAsync('./models/nerves/' + n.file);
           const obj = gltf.scene;
           obj.visible = false;
           obj.userData = n;
           nerveGroup.add(obj);
           idToNerve.set(n.id, obj);
-          console.log(`Loaded ${n.id}: ${n.name} (${n.credit}, ${n.license})`);
+          console.log(`Loaded ${n.id}: ${n.name} (${n.source}, ${n.license})`);
         }
 
         console.log(`Loaded ${nerveEntries.length} cranial nerve models`);
+        populateNerveUI(nerveEntries);
+      }
+
+      // Populate UI with cranial nerve checkboxes
+      function populateNerveUI(nerveEntries) {
+        const cranialNerves = [
+          { id: 'CN_I', name: 'Olfactory' },
+          { id: 'CN_II', name: 'Optic' },
+          { id: 'CN_III', name: 'Oculomotor' },
+          { id: 'CN_IV', name: 'Trochlear' },
+          { id: 'CN_V', name: 'Trigeminal' },
+          { id: 'CN_VI', name: 'Abducens' },
+          { id: 'CN_VII', name: 'Facial' },
+          { id: 'CN_VIII', name: 'Vestibulocochlear' },
+          { id: 'CN_IX', name: 'Glossopharyngeal' },
+          { id: 'CN_X', name: 'Vagus' },
+          { id: 'CN_XI', name: 'Accessory' },
+          { id: 'CN_XII', name: 'Hypoglossal' }
+        ];
+
+        cranialNerves.forEach(cn => {
+          const nerveEntry = nerveEntries.find(n => n.id === cn.id);
+          const isAvailable = !!nerveEntry;
+
+          const item = document.createElement('div');
+          item.className = 'nerve-item';
+
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.id = cn.id;
+          checkbox.disabled = !isAvailable;
+          if (isAvailable) {
+            checkbox.addEventListener('change', (e) => {
+              toggleNerve(cn.id, e.target.checked);
+            });
+          }
+
+          const label = document.createElement('label');
+          label.htmlFor = cn.id;
+          label.textContent = `${cn.id}: ${cn.name}`;
+          if (!isAvailable) {
+            label.style.opacity = '0.5';
+          }
+
+          item.appendChild(checkbox);
+          item.appendChild(label);
+          nerveList.appendChild(item);
+        });
       }
 
       // Nerve visibility controls
@@ -116,22 +230,86 @@
         const obj = idToNerve.get(id);
         if (obj) {
           obj.visible = visible;
-          if (visible) lastToggledNerve = obj;
+          if (visible) {
+            // Clear previous highlight
+            if (lastToggledNerve) clearHighlight(lastToggledNerve);
+            lastToggledNerve = obj;
+            // Apply highlight to new active nerve
+            applyHighlight(obj);
+          } else if (obj === lastToggledNerve) {
+            // If hiding the currently highlighted nerve, clear highlight
+            clearHighlight(obj);
+            lastToggledNerve = null;
+          }
+          // Update UI checkbox
+          const checkbox = document.getElementById(id);
+          if (checkbox) checkbox.checked = visible;
         }
       }
 
+      // Highlight functions
+      function applyHighlight(obj) {
+        obj.traverse(child => {
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach(mat => {
+                mat.emissive = new THREE.Color(0x444444);
+              });
+            } else {
+              child.material.emissive = new THREE.Color(0x444444);
+            }
+          }
+        });
+      }
+
+      function clearHighlight(obj) {
+        obj.traverse(child => {
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach(mat => {
+                mat.emissive = new THREE.Color(0x000000);
+              });
+            } else {
+              child.material.emissive = new THREE.Color(0x000000);
+            }
+          }
+        });
+      }
+
       function showAllNerves() {
-        idToNerve.forEach(obj => obj.visible = true);
+        idToNerve.forEach((obj, id) => {
+          obj.visible = true;
+          // Update UI checkbox
+          const checkbox = document.getElementById(id);
+          if (checkbox) checkbox.checked = true;
+        });
+        // Clear highlight when showing all
+        if (lastToggledNerve) clearHighlight(lastToggledNerve);
+        lastToggledNerve = null;
       }
 
       function hideAllNerves() {
-        idToNerve.forEach(obj => obj.visible = false);
+        idToNerve.forEach((obj, id) => {
+          obj.visible = false;
+          // Update UI checkbox
+          const checkbox = document.getElementById(id);
+          if (checkbox) checkbox.checked = false;
+        });
+        // Clear highlight when hiding all
+        if (lastToggledNerve) clearHighlight(lastToggledNerve);
+        lastToggledNerve = null;
       }
 
       function soloNerve(obj) {
         if (obj) {
           hideAllNerves();
           obj.visible = true;
+          // Update UI checkbox for soloed nerve
+          const id = Array.from(idToNerve.entries()).find(([_, o]) => o === obj)?.[0];
+          if (id) {
+            const checkbox = document.getElementById(id);
+            if (checkbox) checkbox.checked = true;
+          }
         }
       }
 

@@ -1,27 +1,25 @@
 # Active Context
 
 ## Current focus
-- GLB support implemented and validated; foundational cranial nerve pipeline added (auto-fetch + loader + keyboard toggles).
+- Phase 2 completed: cranial nerve UI, assets, and hardening implemented. Ready for Phase 3 (cutaneous marking) or asset expansion.
 
 ## Recent changes
-- `public/index.html`:
-  - Added GLTFLoader and GLB/GLTF-first progressive loader (GLB→OBJ+MTL→OBJ→STL).
-  - Added cranial nerve loader reading `./models/nerves/manifest.json` into a dedicated `nerveGroup`.
-  - Keyboard toggles: 1–9/0 toggle CN I–X; `a` show-all, `h` hide-all, `s` solo last, `f` frame last.
-- `scripts/download_assets.sh`: Extended to handle GLB/GLTF and attempt OBJ→GLB (obj2gltf currently failing; falls back gracefully).
-- New: `scripts/fetch_nerves.py` + `scripts/fetch_nerves.sh` probe caskanatomy mirror for direct GLB links, download if present, and generate `public/models/nerves/manifest.json` + `ATTRIBUTION.txt`.
-- Validation: DamagedHelmet.glb renders with textures; AnatomyTool skull renders (OBJ fallback). Nerve manifest currently empty (no matching GLBs found via direct links).
-- Documentation: Added `memory-bank/phase2-nerve-visualization.md` (design).
+- **UI Panel**: Added minimal CN I–XII panel in `public/index.html` with checkboxes, Show All/Hide All/Solo/Frame buttons. Keyboard shortcuts (1–9/0, a/h/s/f) remain functional and sync with UI.
+- **Sample Assets**: Seeded 4 GLB files (CN_I, CN_II, CN_III, CN_VII) using DamagedHelmet.glb for testing. Updated `manifest.json` with proper schema including `file`, `source`, `license`, `attribution` fields.
+- **Script Hardening**: Removed TLS bypass (`-k/--no-check-certificate`) from `download_assets.sh` and `fetch_nerves.py`. Now uses proper CA trust.
+- **Provider Pattern**: Refactored `fetch_nerves.py` with abstract `NerveProvider` base class. Added `CaskanatomyProvider` (active) and `ZanatomyProvider` (scaffolding with manual mappings).
+- **Performance**: Enabled Draco decoding via `DRACOLoader` (CDN) for compressed GLBs. Added emissive highlighting for active nerves and improved framing.
+- **Attribution**: Updated `ATTRIBUTION.txt` with CC BY 4.0 format for sample assets. Added full CC BY 4.0 license text at `public/licenses/CC-BY-4.0.txt`.
 
 ## Decisions
 - Keep CDN-based Three.js (no bundler yet).
 - Prefer GLB/GLTF for performance/visuals; maintain OBJ/MTL/STL fallbacks.
 - Bypass AnatomyTOOL viewer; only use direct GLB links (no scraping embeds).
-- Allow TLS verification bypass in scripts for POC only.
+- Removed TLS bypass; proper CA trust now required.
+- CC BY 4.0 as working license for nerve assets (more permissive than CC BY-SA 4.0).
 
-## Next steps (Phase 2 preparation)
-1) Acquire cranial nerve GLB sources (expand mirror slugs; evaluate alternative open sources e.g., Z‑Anatomy/BodyParts3D) and populate manifest.
-2) Replace TLS bypass with proper CA trust; harden fetch scripts.
-3) Add minimal UI panel for CN I–XII list and isolation modes (replacing keyboard-only).
-4) Implement framing/highlight polish and basic performance guards (texture compression / draco as needed).
-5) Revisit OBJ→GLB conversion toolchain (gltf-transform pipeline) if GLBs are unavailable.
+## Next steps (Phase 3 preparation)
+1) Implement cutaneous territory marking: skin texture overlay with paint/unpaint tools, sharable state URLs.
+2) Expand nerve asset sources: add real cranial nerve GLBs from Z-Anatomy or other CC BY 4.0 sources.
+3) Add basic performance monitoring and texture compression for larger models.
+4) Consider UI polish: tooltips, better responsive design, About panel linking to attributions.

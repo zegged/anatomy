@@ -1,20 +1,132 @@
 #!/usr/bin/env python3
 """
-Fetch cranial nerve GLB models from caskanatomy.info mirror.
+Fetch cranial nerve GLB models from multiple providers.
 Attempts direct GLB URLs, downloads available ones, and generates manifest.json.
 """
 
 import json
 import os
 import sys
-import ssl
 import urllib.request
 import urllib.error
 from pathlib import Path
+from abc import ABC, abstractmethod
 
 # Configuration
-BASE_URL = "https://caskanatomy.info/open3dviewer/3dmodels"
 DEST_DIR = Path("/workspaces/anatomy/public/models/nerves")
+
+class NerveProvider(ABC):
+    """Abstract base class for nerve asset providers."""
+
+    @abstractmethod
+    def fetch_nerve(self, nerve_id, name, slugs):
+        """Attempt to fetch a specific nerve. Returns asset info dict or None."""
+        pass
+
+class CaskanatomyProvider(NerveProvider):
+    """Provider for caskanatomy.info mirror."""
+
+    def __init__(self):
+        self.base_url = "https://caskanatomy.info/open3dviewer/3dmodels"
+
+    def fetch_nerve(self, nerve_id, name, slugs):
+        """Try to fetch nerve from caskanatomy."""
+        for slug in slugs:
+            glb_url = f"{self.base_url}/{slug}/{slug}.glb"
+            if self._check_glb_url(glb_url):
+                dest_path = DEST_DIR / f"{nerve_id}.glb"
+                if self._download_glb(glb_url, dest_path):
+                    return {
+                        "id": nerve_id,
+                        "name": name,
+                        "file": f"{nerve_id}.glb",
+                        "source": "caskanatomy.info",
+                        "license": "CC BY-SA 4.0",
+                        "attribution": f"Open3D project; Denise M.J. Arnold MD et al — {glb_url}"
+                    }
+        return None
+
+    def _check_glb_url(self, url):
+        """Check if GLB URL exists by HEAD request."""
+        try:
+            req = urllib.request.Request(url, method='HEAD')
+            response = urllib.request.urlopen(req, timeout=10)
+            return response.status == 200
+        except Exception as e:
+            print(f"Error checking {url}: {e}", file=sys.stderr)
+            return False
+
+    def _download_glb(self, url, dest_path):
+        """Download GLB file to destination."""
+        try:
+            with urllib.request.urlopen(url, timeout=30) as response:
+                with open(dest_path, 'wb') as f:
+                    while True:
+                        chunk = response.read(8192)
+                        if not chunk:
+                            break
+                        f.write(chunk)
+            print(f"Downloaded {url} -> {dest_path}")
+            return True
+        except Exception as e:
+            print(f"Error downloading {url}: {e}", file=sys.stderr)
+            return False
+
+
+class ZanatomyProvider(NerveProvider):
+    """Provider for Z-Anatomy. Manual mapping scaffolding."""
+
+    def __init__(self):
+        # Manual URL mappings for Z-Anatomy assets
+        # TODO: Replace with actual Z-Anatomy GLB URLs when available
+        self.manual_mappings = {
+            # Example mappings (placeholder - replace with real URLs)
+            # "CN_I": "https://zanatomy.net/models/olfactory_nerve.glb",
+            # "CN_II": "https://zanatomy.net/models/optic_nerve.glb",
+        }
+
+    def fetch_nerve(self, nerve_id, name, slugs):
+        """Try to fetch nerve from manual Z-Anatomy mappings."""
+        if nerve_id in self.manual_mappings:
+            glb_url = self.manual_mappings[nerve_id]
+            if self._check_glb_url(glb_url):
+                dest_path = DEST_DIR / f"{nerve_id}.glb"
+                if self._download_glb(glb_url, dest_path):
+                    return {
+                        "id": nerve_id,
+                        "name": name,
+                        "file": f"{nerve_id}.glb",
+                        "source": "Z-Anatomy",
+                        "license": "CC BY 4.0",
+                        "attribution": f"Z-Anatomy Contributors — {glb_url}"
+                    }
+        return None
+
+    def _check_glb_url(self, url):
+        """Check if GLB URL exists by HEAD request."""
+        try:
+            req = urllib.request.Request(url, method='HEAD')
+            response = urllib.request.urlopen(req, timeout=10)
+            return response.status == 200
+        except Exception as e:
+            print(f"Error checking {url}: {e}", file=sys.stderr)
+            return False
+
+    def _download_glb(self, url, dest_path):
+        """Download GLB file to destination."""
+        try:
+            with urllib.request.urlopen(url, timeout=30) as response:
+                with open(dest_path, 'wb') as f:
+                    while True:
+                        chunk = response.read(8192)
+                        if not chunk:
+                            break
+                        f.write(chunk)
+            print(f"Downloaded {url} -> {dest_path}")
+            return True
+        except Exception as e:
+            print(f"Error downloading {url}: {e}", file=sys.stderr)
+            return False
 
 # Cranial nerve definitions with candidate slugs
 CRANIAL_NERVES = [
@@ -104,80 +216,43 @@ CRANIAL_NERVES = [
     },
 ]
 
-
-# Create SSL context that doesn't verify certificates (POC only)
-ssl_context = ssl.create_default_context()
-ssl_context.check_hostname = False
-ssl_context.verify_mode = ssl.CERT_NONE
-
-def check_glb_url(url):
-    """Check if GLB URL exists by HEAD request."""
-    try:
-        req = urllib.request.Request(url, method='HEAD')
-        response = urllib.request.urlopen(req, timeout=10, context=ssl_context)
-        return response.status == 200
-    except Exception as e:
-        print(f"Error checking {url}: {e}", file=sys.stderr)
-        return False
-
-
-def download_glb(url, dest_path):
-    """Download GLB file to destination."""
-    try:
-        with urllib.request.urlopen(url, timeout=30, context=ssl_context) as response:
-            with open(dest_path, 'wb') as f:
-                while True:
-                    chunk = response.read(8192)
-                    if not chunk:
-                        break
-                    f.write(chunk)
-        print(f"Downloaded {url} -> {dest_path}")
-        return True
-    except Exception as e:
-        print(f"Error downloading {url}: {e}", file=sys.stderr)
-        return False
-
-
 def main():
     """Main fetch logic."""
     # Create destination directory
     DEST_DIR.mkdir(parents=True, exist_ok=True)
 
-    manifest = []
+    # Initialize providers
+    providers = [
+        CaskanatomyProvider(),
+        ZanatomyProvider()  # Scaffolding - manual mappings only for now
+    ]
+
+    manifest_nerves = []
     attributions = []
 
     for nerve in CRANIAL_NERVES:
         found = False
 
-        # Try each slug for this nerve
-        for slug in nerve["slugs"]:
-            glb_url = f"{BASE_URL}/{slug}/{slug}.glb"
-
-            if check_glb_url(glb_url):
-                # Download the GLB
-                dest_path = DEST_DIR / f"{nerve['id']}.glb"
-                if download_glb(glb_url, dest_path):
-                    # Add to manifest
-                    manifest.append({
-                        "id": nerve["id"],
-                        "name": nerve["name"],
-                        "url": glb_url,
-                        "localPath": f"./models/nerves/{nerve['id']}.glb",
-                        "license": nerve["license"],
-                        "credit": nerve["credit"]
-                    })
-
-                    # Add attribution
-                    attributions.append(f"{nerve['id']} ({nerve['name']}): {nerve['credit']}, {nerve['license']}")
-
-                    found = True
-                    break
+        # Try each provider
+        for provider in providers:
+            asset_info = provider.fetch_nerve(nerve["id"], nerve["name"], nerve["slugs"])
+            if asset_info:
+                manifest_nerves.append(asset_info)
+                attributions.append(f"Asset: {nerve['id']} — {nerve['name']} (GLB)")
+                attributions.append(f"Creator: {asset_info['attribution'].split(' — ')[0]}")
+                attributions.append(f"Source: {asset_info['attribution'].split(' — ')[1]}")
+                attributions.append(f"License: {asset_info['license']} — https://creativecommons.org/licenses/by-sa/4.0/")
+                attributions.append("Changes: None (original)")
+                attributions.append("")
+                found = True
+                break
 
         if not found:
             print(f"No GLB found for {nerve['id']} ({nerve['name']})")
 
     # Write manifest
     manifest_path = DEST_DIR / "manifest.json"
+    manifest = {"nerves": manifest_nerves}
     with open(manifest_path, 'w') as f:
         json.dump(manifest, f, indent=2)
     print(f"Wrote manifest to {manifest_path}")
@@ -190,10 +265,10 @@ def main():
         f.write("All models are licensed under Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)\n")
         f.write("Source: Open3D project (anatomytool.org), caskanatomy.info mirror\n\n")
         f.write("\n".join(attributions))
-        f.write("\n\nFor full license text: https://creativecommons.org/licenses/by-sa/4.0/\n")
+        f.write("For full license text: https://creativecommons.org/licenses/by-sa/4.0/\n")
     print(f"Wrote attributions to {attrib_path}")
 
-    print(f"Successfully processed {len(manifest)} cranial nerves")
+    print(f"Successfully processed {len(manifest_nerves)} cranial nerves")
     return 0
 
 

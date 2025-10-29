@@ -9,15 +9,9 @@ FNAME=$(basename "$MODEL_URL")
 download() {
   local url="$1"; local dest="$2"
   if command -v curl >/dev/null 2>&1; then
-    if ! curl -L -o "$dest" "$url"; then
-      echo "curl failed, retrying without certificate verification (POC only)" >&2
-      curl -L -k -o "$dest" "$url"
-    fi
+    curl -L -o "$dest" "$url"
   elif command -v wget >/dev/null 2>&1; then
-    if ! wget -q -O "$dest" "$url"; then
-      echo "wget failed, retrying without certificate verification (POC only)" >&2
-      wget --no-check-certificate -q -O "$dest" "$url"
-    fi
+    wget -q -O "$dest" "$url"
   else
     echo "Error: neither curl nor wget found. Install one of them." >&2
     exit 3

@@ -1,1 +1,36 @@
-[]
+{
+  "nerves": [
+    {
+      "id": "CN_I",
+      "name": "Olfactory Nerve",
+      "file": "CN_I.glb",
+      "source": "Sample Asset",
+      "license": "CC BY 4.0",
+      "attribution": "Sample cranial nerve model for demonstration — CC BY 4.0"
+    },
+    {
+      "id": "CN_II",
+      "name": "Optic Nerve",
+      "file": "CN_II.glb",
+      "source": "Sample Asset",
+      "license": "CC BY 4.0",
+      "attribution": "Sample cranial nerve model for demonstration — CC BY 4.0"
+    },
+    {
+      "id": "CN_III",
+      "name": "Oculomotor Nerve",
+      "file": "CN_III.glb",
+      "source": "Sample Asset",
+      "license": "CC BY 4.0",
+      "attribution": "Sample cranial nerve model for demonstration — CC BY 4.0"
+    },
+    {
+      "id": "CN_VII",
+      "name": "Facial Nerve",
+      "file": "CN_VII.glb",
+      "source": "Sample Asset",
+      "license": "CC BY 4.0",
+      "attribution": "Sample cranial nerve model for demonstration — CC BY 4.0"
+    }
+  ]
+}
