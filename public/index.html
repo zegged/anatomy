@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>POC – Three.js + GLB</title>
+    <style>html,body{margin:0;height:100%}canvas{display:block;width:100%;height:100%}</style>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.157.0/build/three.module.js",
+        "three/examples/jsm/": "https://unpkg.com/three@0.157.0/examples/jsm/"
+      }
+    }
+    </script>
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+    <script type="module">
+      import * as THREE from 'three';
+      import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+      import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+      import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
+      import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
+
+      const canvas = document.querySelector('#c');
+      const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
+      renderer.setPixelRatio(devicePixelRatio);
+      renderer.setSize(innerWidth, innerHeight);
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x202124);
+      const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 100);
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1.0));
+      const dir = new THREE.DirectionalLight(0xffffff, 1.0); dir.position.set(5,10,7.5); scene.add(dir);
+
+      const MODEL_ROOT = './models/anatomytool/';
+      const OBJ = MODEL_ROOT + 'model.obj';
+      const MTL = MODEL_ROOT + 'model.mtl';
+      const STL = MODEL_ROOT + 'model.stl';
+
+      async function exists(url){ const r = await fetch(url,{method:'HEAD'}); return r.ok; }
+
+      async function loadModel(scene) {
+        if (await exists(MTL) && await exists(OBJ)) {
+          const mtl = await new MTLLoader().loadAsync(MTL);
+          mtl.preload();
+          const objLoader = new OBJLoader();
+          objLoader.setMaterials(mtl);
+          const obj = await objLoader.loadAsync(OBJ);
+          scene.add(obj);
+          return obj;
+        }
+        if (await exists(OBJ)) {
+          const obj = await new OBJLoader().loadAsync(OBJ);
+          scene.add(obj);
+          return obj;
+        }
+        if (await exists(STL)) {
+          const geom = await new STLLoader().loadAsync(STL);
+          const mat = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.1, roughness: 0.8 });
+          const mesh = new THREE.Mesh(geom, mat);
+          scene.add(mesh);
+          return mesh;
+        }
+        throw new Error('No supported model found under ' + MODEL_ROOT);
+      }
+
+      // Load and frame the model
+      loadModel(scene).then(object => {
+        frameObject(camera, controls, object, renderer);
+      }).catch(e => console.error(e));
+
+      // Frame object in view
+      function frameObject(camera, controls, object, renderer) {
+        const box = new THREE.Box3().setFromObject(object);
+        const size = box.getSize(new THREE.Vector3()).length();
+        const center = box.getCenter(new THREE.Vector3());
+        controls.target.copy(center);
+        camera.near = size / 100; camera.far = size * 10; camera.updateProjectionMatrix();
+        const dist = size * 1.2; camera.position.copy(center).add(new THREE.Vector3(dist, dist*0.6, dist));
+        renderer.render(object.parent, camera);
+      }
+
+      addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); });
+      (function animate(){ requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); })();
+    </script>
+  </body>
+</html>
