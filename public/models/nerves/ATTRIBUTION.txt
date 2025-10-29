@@ -7,11 +7,11 @@ Source: Three.js examples — https://unpkg.com/three@0.157.0/examples/models/gl
 License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
 Changes: None (placeholder model)
 
-Asset: CN_II — Optic Nerve (GLB)
-Creator: Placeholder using DamagedHelmet model
-Source: Three.js examples — https://unpkg.com/three@0.157.0/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf
-License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
-Changes: None (placeholder model)
+Asset: CN_II — Optic nerve (CN II) (GLB)
+Creator: BodyParts3D (DBCLS)
+Source: BodyParts3D — https://lifesciencedb.jp/bp3d/
+License: CC BY-SA 2.1 JP — public/licenses/CC-BY-SA-2.1.txt
+Changes: Converted from OBJ to GLB; scaled/oriented for Three.js; minor adjustments
 
 Asset: CN_III — Oculomotor Nerve (GLB)
 Creator: Placeholder using DamagedHelmet model
@@ -19,16 +19,18 @@ Source: Three.js examples — https://unpkg.com/three@0.157.0/examples/models/gl
 License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
 Changes: None (placeholder model)
 
-Asset: CN_V — Trigeminal Nerve (GLB)
-Creator: Placeholder using DamagedHelmet model
-Source: Three.js examples — https://unpkg.com/three@0.157.0/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf
-License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
-Changes: None (placeholder model)
+Asset: CN_V — Trigeminal nerve (CN V) (GLB)
+Creator: BodyParts3D (DBCLS)
+Source: BodyParts3D — https://lifesciencedb.jp/bp3d/
+License: CC BY-SA 2.1 JP — public/licenses/CC-BY-SA-2.1.txt
+Changes: Converted from OBJ to GLB; scaled/oriented for Three.js; minor adjustments
 
-Asset: CN_VII — Facial Nerve (GLB)
-Creator: Placeholder using DamagedHelmet model
-Source: Three.js examples — https://unpkg.com/three@0.157.0/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf
-License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
-Changes: None (placeholder model)
+Asset: CN_VII — Facial nerve (CN VII) (GLB)
+Creator: BodyParts3D (DBCLS)
+Source: BodyParts3D — https://lifesciencedb.jp/bp3d/
+License: CC BY-SA 2.1 JP — public/licenses/CC-BY-SA-2.1.txt
+Changes: Converted from OBJ to GLB; scaled/oriented for Three.js; minor adjustments
 
-For full license text: https://creativecommons.org/licenses/by/4.0/
+For full license text:
+- CC BY 4.0: https://creativecommons.org/licenses/by/4.0/
+- CC BY-SA 2.1 JP: public/licenses/CC-BY-SA-2.1.txt

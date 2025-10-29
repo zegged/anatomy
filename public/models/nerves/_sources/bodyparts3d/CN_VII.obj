@@ -1,0 +1,17 @@
+# Placeholder BodyParts3D Facial Nerve (CN VII)
+# This is a simplified representation for pipeline testing
+# In production, this would be replaced with actual BodyParts3D data
+
+v -0.2 -0.4 -0.6
+v 0.2 -0.4 -0.6
+v 0.2 0.4 -0.6
+v -0.2 0.4 -0.6
+v 0.0 0.0 0.7
+v 0.0 0.2 0.4
+v 0.0 -0.2 0.4
+
+f 1 2 3 4
+f 1 4 5 6
+f 2 3 5 7
+f 3 4 6 7
+f 5 6 7

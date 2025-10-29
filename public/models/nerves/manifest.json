@@ -10,11 +10,11 @@
     },
     {
       "id": "CN_II",
-      "name": "Optic Nerve",
+      "name": "Optic nerve (CN II)",
       "file": "CN_II.glb",
-      "source": "Placeholder (DamagedHelmet)",
-      "license": "CC BY 4.0",
-      "attribution": "Placeholder model using DamagedHelmet GLB for demonstration — CC BY 4.0"
+      "source": "BodyParts3D",
+      "license": "CC BY-SA 2.1 JP",
+      "attribution": "BodyParts3D (DBCLS); converted to GLB; minor scale/orientation adjustments"
     },
     {
       "id": "CN_III",
@@ -26,19 +26,19 @@
     },
     {
       "id": "CN_V",
-      "name": "Trigeminal Nerve",
+      "name": "Trigeminal nerve (CN V)",
       "file": "CN_V.glb",
-      "source": "Placeholder (DamagedHelmet)",
-      "license": "CC BY 4.0",
-      "attribution": "Placeholder model using DamagedHelmet GLB for demonstration — CC BY 4.0"
+      "source": "BodyParts3D",
+      "license": "CC BY-SA 2.1 JP",
+      "attribution": "BodyParts3D (DBCLS); converted to GLB; minor scale/orientation adjustments"
     },
     {
       "id": "CN_VII",
-      "name": "Facial Nerve",
+      "name": "Facial nerve (CN VII)",
       "file": "CN_VII.glb",
-      "source": "Placeholder (DamagedHelmet)",
-      "license": "CC BY 4.0",
-      "attribution": "Placeholder model using DamagedHelmet GLB for demonstration — CC BY 4.0"
+      "source": "BodyParts3D",
+      "license": "CC BY-SA 2.1 JP",
+      "attribution": "BodyParts3D (DBCLS); converted to GLB; minor scale/orientation adjustments"
     }
   ]
 }
