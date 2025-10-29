@@ -85,9 +85,65 @@
         throw new Error('No supported model found under ' + MODEL_ROOT);
       }
 
+      // Load cranial nerve models from manifest
+      const nerveGroup = new THREE.Group();
+      scene.add(nerveGroup);
+      const idToNerve = new Map();
+      let lastToggledNerve = null;
+
+      async function loadNerveModels(scene) {
+        const manifestUrl = './models/nerves/manifest.json';
+        const response = await fetch(manifestUrl);
+        if (!response.ok) throw new Error('Manifest not found');
+        const nerveEntries = await response.json();
+
+        const gltfLoader = new GLTFLoader();
+        for (const n of nerveEntries) {
+          const gltf = await gltfLoader.loadAsync(n.localPath);
+          const obj = gltf.scene;
+          obj.visible = false;
+          obj.userData = n;
+          nerveGroup.add(obj);
+          idToNerve.set(n.id, obj);
+          console.log(`Loaded ${n.id}: ${n.name} (${n.credit}, ${n.license})`);
+        }
+
+        console.log(`Loaded ${nerveEntries.length} cranial nerve models`);
+      }
+
+      // Nerve visibility controls
+      function toggleNerve(id, visible) {
+        const obj = idToNerve.get(id);
+        if (obj) {
+          obj.visible = visible;
+          if (visible) lastToggledNerve = obj;
+        }
+      }
+
+      function showAllNerves() {
+        idToNerve.forEach(obj => obj.visible = true);
+      }
+
+      function hideAllNerves() {
+        idToNerve.forEach(obj => obj.visible = false);
+      }
+
+      function soloNerve(obj) {
+        if (obj) {
+          hideAllNerves();
+          obj.visible = true;
+        }
+      }
+
+      function frameNerve(obj) {
+        if (obj) frameObject(camera, controls, obj, renderer);
+      }
+
       // Load and frame the model
       loadModel(scene).then(object => {
         frameObject(camera, controls, object, renderer);
+        // Load cranial nerves if manifest exists
+        loadNerveModels(scene).catch(e => console.log('No nerve models loaded:', e.message));
       }).catch(e => console.error(e));
 
       // Frame object in view
@@ -100,6 +156,31 @@
         const dist = size * 1.2; camera.position.copy(center).add(new THREE.Vector3(dist, dist*0.6, dist));
         renderer.render(object.parent, camera);
       }
+
+      // Keyboard controls for nerves
+      addEventListener('keydown', (event) => {
+        const key = event.key.toLowerCase();
+        // Number keys 1-9, 0 for nerves CN_I to CN_X
+        if (key >= '1' && key <= '9') {
+          const nerveIndex = parseInt(key) - 1;
+          const nerveIds = ['CN_I', 'CN_II', 'CN_III', 'CN_IV', 'CN_V', 'CN_VI', 'CN_VII', 'CN_VIII', 'CN_IX'];
+          if (nerveIds[nerveIndex]) {
+            const obj = idToNerve.get(nerveIds[nerveIndex]);
+            if (obj) toggleNerve(nerveIds[nerveIndex], !obj.visible);
+          }
+        } else if (key === '0') {
+          const obj = idToNerve.get('CN_X');
+          if (obj) toggleNerve('CN_X', !obj.visible);
+        } else if (key === 'a') {
+          showAllNerves();
+        } else if (key === 'h') {
+          hideAllNerves();
+        } else if (key === 's') {
+          soloNerve(lastToggledNerve);
+        } else if (key === 'f') {
+          frameNerve(lastToggledNerve);
+        }
+      });
 
       addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); });
       (function animate(){ requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); })();
